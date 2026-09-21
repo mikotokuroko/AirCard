@@ -17,6 +17,8 @@ import sys
 import time
 from pathlib import Path
 
+from localization import print_localized, input_localized, translate
+
 # Ensure bundled and standard bin paths are in PATH
 script_dir = Path(__file__).resolve().parent
 for bin_path in [
@@ -141,19 +143,19 @@ def syslog_command(udid: str) -> list[str] | None:
 
 def capture_card_hashes(udid: str, existing_cards: list[str] | None = None) -> list[str]:
     """Listens to syslog and collects card hashes while the user opens Apple Wallet."""
-    print("\n" + "=" * 60)
-    print("📡 CARD SCANNING MODE")
-    print("=" * 60)
-    print("To detect your cards:")
-    print("  👉 1) Double-click Side (Power) button to open Apple Pay.")
-    print("  👉 2) Authenticate with Face ID.")
-    print("  👉 3) Tap your card to trigger instant detection!")
-    print("Press ENTER when finished.")
-    print("=" * 60 + "\n")
+    print_localized("\n" + "=" * 60)
+    print_localized("📡 CARD SCANNING MODE")
+    print_localized("=" * 60)
+    print_localized("To detect your cards:")
+    print_localized("  👉 1) Double-click Side (Power) button to open Apple Pay.")
+    print_localized("  👉 2) Authenticate with Face ID.")
+    print_localized("  👉 3) Tap your card to trigger instant detection!")
+    print_localized("Press ENTER when finished.")
+    print_localized("=" * 60 + "\n")
 
     cmd = syslog_command(udid)
     if not cmd:
-        print("\u274c Bundled device_helper is missing \u2014 cannot read the device log.")
+        print_localized("\u274c Bundled device_helper is missing \u2014 cannot read the device log.")
         return list(existing_cards or [])
     process = subprocess.Popen(
         cmd,
@@ -225,7 +227,7 @@ def capture_card_hashes(udid: str, existing_cards: list[str] | None = None) -> l
                             continue
                         if h and h not in found_hashes:
                             found_hashes.add(h)
-                            print(f"  ✨ Detected card [{len(found_hashes)}]: {h}")
+                            print_localized(f"  ✨ Detected card [{len(found_hashes)}]: {h}")
 
     except KeyboardInterrupt:
         pass
@@ -275,43 +277,43 @@ def prepare_card_image(input_path: str) -> bytes:
 
 
 def main():
-    print("=" * 60)
-    print("🎴 AirCard — Apple Wallet Card Skinner (via airlift)")
-    print("=" * 60)
+    print_localized("=" * 60)
+    print_localized("🎴 AirCard — Apple Wallet Card Skinner (via airlift)")
+    print_localized("=" * 60)
 
     # 1. Device discovery
-    print("\n[1/5] Searching for connected device...")
+    print_localized("\n[1/5] Searching for connected device...")
     device = get_connected_device()
     if not device:
-        print("❌ iPhone not found! Connect your iPhone via USB and unlock the screen.")
+        print_localized("❌ iPhone not found! Connect your iPhone via USB and unlock the screen.")
         sys.exit(1)
 
-    print(f"✅ Found: {device['name']} ({device['product']}, iOS {device['version']})")
-    print(f"   UDID: {device['udid']}")
+    print_localized(f"✅ Found: {device['name']} ({device['product']}, iOS {device['version']})")
+    print_localized(f"   UDID: {device['udid']}")
 
     # 2. Check airlift compatibility
     probe = native("probe", device["udid"])
     if not operation_ok(probe):
-        print("❌ Airlift pre-check failed. Ensure the device is paired and trusted.")
+        print_localized("❌ Airlift pre-check failed. Ensure the device is paired and trusted.")
         sys.exit(1)
 
     # 3. Card discovery / selection
     saved_cards = load_saved_cards()
-    print(f"\n[2/5] Saved cards: {len(saved_cards)}")
+    print_localized(f"\n[2/5] Saved cards: {len(saved_cards)}")
     for idx, h in enumerate(saved_cards, 1):
-        print(f"  [{idx}] {h}")
+        print_localized(f"  [{idx}] {h}")
 
-    print("\nChoose an action:")
-    print("  1 - Use existing cards")
-    print("  2 - Scan cards (open Wallet & tap card)")
-    print("  3 - Enter card hash(es) manually")
-    mode = input("Your choice [1]: ").strip()
+    print_localized("\nChoose an action:")
+    print_localized("  1 - Use existing cards")
+    print_localized("  2 - Scan cards (open Wallet & tap card)")
+    print_localized("  3 - Enter card hash(es) manually")
+    mode = input_localized("Your choice [1]: ").strip()
 
     hashes = saved_cards
     if mode == "2":
         hashes = capture_card_hashes(device["udid"], saved_cards)
     elif mode == "3":
-        manual = input("Enter card hashes separated by commas or spaces: ").strip()
+        manual = input_localized("Enter card hashes separated by commas or spaces: ").strip()
         new_items = [x.strip() for x in re.split(r"[\s,;]+", manual) if len(x.strip()) >= 16]
         for item in new_items:
             if item not in hashes:
@@ -319,17 +321,17 @@ def main():
         save_cards(hashes)
 
     if not hashes:
-        print("❌ No cards available to flash.")
+        print_localized("❌ No cards available to flash.")
         sys.exit(1)
 
-    print(f"\n[3/5] Ready to flash cards ({len(hashes)}):")
+    print_localized(f"\n[3/5] Ready to flash cards ({len(hashes)}):")
     for i, h in enumerate(hashes, 1):
-        print(f"  [{i}] {h}")
+        print_localized(f"  [{i}] {h}")
 
-    print("\nSelect cards to customize:")
-    print("  'all' - apply to all cards")
-    print("  comma-separated numbers (e.g. 1,3)")
-    choice = input("Your choice [all]: ").strip().lower()
+    print_localized("\nSelect cards to customize:")
+    print_localized("  'all' - apply to all cards")
+    print_localized("  comma-separated numbers (e.g. 1,3)")
+    choice = input_localized("Your choice [all]: ").strip().lower()
 
     if choice == "" or choice == "all":
         selected_hashes = hashes
@@ -338,48 +340,48 @@ def main():
             indices = [int(x.strip()) for x in choice.split(",") if x.strip()]
             selected_hashes = [hashes[i - 1] for i in indices if 1 <= i <= len(hashes)]
         except Exception:
-            print("Invalid input. Applying to all cards.")
+            print_localized("Invalid input. Applying to all cards.")
             selected_hashes = hashes
 
     if not selected_hashes:
-        print("❌ No cards selected.")
+        print_localized("❌ No cards selected.")
         sys.exit(1)
 
     # 4. Prepare image
-    print(f"\n[4/5] Preparing image...")
+    print_localized(f"\n[4/5] Preparing image...")
     while True:
-        img_input = input("Drag and drop image file into terminal (or enter path): ").strip()
+        img_input = input_localized("Drag and drop image file into terminal (or enter path): ").strip()
         try:
             png_bytes = prepare_card_image(img_input)
-            print(f"✅ Image optimized for Apple Wallet ({len(png_bytes)} bytes)")
+            print_localized(f"✅ Image optimized for Apple Wallet ({len(png_bytes)} bytes)")
             break
         except Exception as e:
-            print(f"❌ Error: {e}. Please specify another image.")
+            print_localized(f"❌ Error: {e}. Please specify another image.")
 
     # 5. Flash cards
-    print(f"\n[5/5] Flashing skin to selected cards ({len(selected_hashes)})...")
+    print_localized(f"\n[5/5] Flashing skin to selected cards ({len(selected_hashes)})...")
 
     for idx, h in enumerate(selected_hashes, 1):
-        print(f"\n--- [{idx}/{len(selected_hashes)}] Card: {h} ---")
+        print_localized(f"\n--- [{idx}/{len(selected_hashes)}] Card: {h} ---")
         pkpass_dir = f"/var/mobile/Library/Passes/Cards/{h}.pkpass"
 
         for asset in TARGET_ASSETS:
             ok = write_file(device["udid"], pkpass_dir, asset, png_bytes)
-            status = "OK" if ok else "FAIL"
-            print(f"  -> {asset}: {status}")
+            status = translate("SUCCESS" if ok else "FAILED")
+            print_localized(f"  -> {asset}: {status}")
 
         for ext in [".cache", ".pkcache"]:
             cache_dir = f"/var/mobile/Library/Passes/Cards/{h}{ext}"
             for leaf in CACHE_FILES:
                 write_file(device["udid"], cache_dir, leaf, b"corrupted")
-        print("  -> System cache cleared (.cache & .pkcache)")
+        print_localized("  -> System cache cleared (.cache & .pkcache)")
 
-    print("\n" + "=" * 60)
-    print("🎉 DONE! All selected cards successfully updated!")
-    print("=" * 60)
-    print("1. Force close Apple Wallet on your iPhone.")
-    print("2. If the image does not update immediately, restart your iPhone.")
-    print("=" * 60)
+    print_localized("\n" + "=" * 60)
+    print_localized("🎉 DONE! All selected cards successfully updated!")
+    print_localized("=" * 60)
+    print_localized("1. Force close Apple Wallet on your iPhone.")
+    print_localized("2. If the image does not update immediately, restart your iPhone.")
+    print_localized("=" * 60)
 
 
 if __name__ == "__main__":

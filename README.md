@@ -1,5 +1,7 @@
 # AirCard 🎴
 
+English | [简体中文](README.zh-CN.md)
+
 > **Apple Wallet Card Skinner & Lockscreen Passcode Themer for iOS 18+ (No Jailbreak Required)**  
 > **Tested on iOS 27 release.**
 > Powered by the `airlift` AirTraffic sync exploit.
@@ -9,6 +11,8 @@
 </p>
 
 ---
+
+Use **中 | EN** in the header to switch the interface language. Your choice is saved.
 
 ## Features
 - 🎨 **Custom Card Skins:** Assign custom artwork, textures, or bank logos to Apple Pay and Wallet cards.
@@ -57,7 +61,7 @@
 ## How to Apply Lockscreen Passcode Themes (.passthm)
 1. Switch to the **Passcode Themes** tab at the top of AirCard.
 2. Drag & drop any `.passthm` file into the app (or click **Choose .passthm File**).
-3. AirCard will inspect the theme and display an interactive preview on the numeric keypad (0–9, *, #).
+3. AirCard will inspect the theme and display an interactive preview on the numeric keypad (0–9).
 4. Click **Apply Passcode Theme**.
 5. Restart your iPhone to reload the lock screen cache and see your custom passcode buttons!
 

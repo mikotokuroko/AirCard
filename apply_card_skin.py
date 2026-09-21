@@ -16,6 +16,8 @@ import time
 import zipfile
 from pathlib import Path
 
+from localization import print_localized, translate
+
 ROOT = Path(__file__).resolve().parent
 DEVICE_HELPER = ROOT / "bin" / "device_helper" if (ROOT / "bin" / "device_helper").is_file() else ROOT / "build" / "device_helper"
 AIRTRAFFIC_HOST = ROOT / "bin" / "airtraffic_host" if (ROOT / "bin" / "airtraffic_host").is_file() else ROOT / "build" / "airtraffic_host"
@@ -364,24 +366,24 @@ def invalidate_cache(udid: str, card_hash: str) -> bool:
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: apply_card_skin.py <udid> <image_path> [card_hash ...]")
+        print_localized("Usage: apply_card_skin.py <udid> <image_path> [card_hash ...]")
         return
     udid = sys.argv[1]
     img_path = Path(sys.argv[2])
     if not img_path.is_file():
-        print(f"Error: {img_path} not found")
+        print_localized(f"Error: {img_path} not found")
         sys.exit(1)
     img_data = img_path.read_bytes()
     hashes = sys.argv[3:]
 
-    print(f"Loaded image from batter: {len(img_data)} bytes")
-    print(f"Targeting {len(hashes)} cards on device {udid}...")
+    print_localized(f"Loaded image from batter: {len(img_data)} bytes")
+    print_localized(f"Targeting {len(hashes)} cards on device {udid}...")
 
     for index, h in enumerate(hashes, 1):
         target_dir = f"/var/mobile/Library/Passes/Cards/{h}.pkpass"
-        print(f"\n[{index}/{len(hashes)}] Processing card: {h}")
+        print_localized(f"\n[{index}/{len(hashes)}] Processing card: {h}")
 
-        print("  -> Writing card artwork (fast batch)...")
+        print_localized("  -> Writing card artwork (fast batch)...")
         card_assets = [
             ("cardBackgroundCombined@3x.png", img_data),
             ("cardBackgroundCombined@2x.png", img_data),
@@ -391,13 +393,13 @@ def main():
             ok3x = write_file(udid, target_dir, "cardBackgroundCombined@3x.png", img_data)
             ok2x = write_file(udid, target_dir, "cardBackgroundCombined@2x.png", img_data)
             ok_batch = ok3x and ok2x
-        print(f"     Result: {'SUCCESS' if ok_batch else 'FAILED'}")
+        print_localized(f"     Result: {translate('SUCCESS' if ok_batch else 'FAILED')}")
 
-        print("  -> Invalidating pass cache...")
+        print_localized("  -> Invalidating pass cache...")
         ok_cache = invalidate_cache(udid, h)
-        print(f"     Result: {'SUCCESS' if ok_cache else 'FAILED (or cache already empty)'}")
+        print_localized(f"     Result: {translate('SUCCESS' if ok_cache else 'FAILED (or cache already empty)')}")
 
-    print("\nAll done! Please force close Wallet on your iPhone and reopen it.")
+    print_localized("\nAll done! Please force close Wallet on your iPhone and reopen it.")
 
 
 if __name__ == "__main__":
